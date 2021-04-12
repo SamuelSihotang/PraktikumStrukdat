@@ -5,8 +5,8 @@
 /* Struktur Node */
 
 typedef struct pqueueNode_t {
-    int data;
-    int priority;
+    int jamIN;
+    int jamOUT;
     struct pqueueNode_t *next;
 } PQueueNode;
 
@@ -22,7 +22,7 @@ typedef struct pqueue_t {
 
 void pqueue_init(PriorityQueue *pqueue);
 bool pqueue_isEmpty(PriorityQueue *pqueue);
-void pqueue_push(PriorityQueue *pqueue, int value, int prioritas);
+void pqueue_push(PriorityQueue *pqueue, int jam1, int jam2);
 void pqueue_pop(PriorityQueue *pqueue);
 int  pqueue_top(PriorityQueue *pqueue);
 
@@ -38,13 +38,13 @@ bool pqueue_isEmpty(PriorityQueue *pqueue) {
     return (pqueue->_top == NULL);
 }
 
-void pqueue_push(PriorityQueue *pqueue, int value, int prioritas)
+void pqueue_push(PriorityQueue *pqueue, int jam1, int jam2)
 {
     PQueueNode *temp = pqueue->_top;
     PQueueNode *newNode = \
         (PQueueNode*) malloc (sizeof(PQueueNode));
-    newNode->data = value;
-    newNode->priority = prioritas;
+    newNode->jamIN = jam1;
+    newNode->jamOUT = jam2;
     newNode->next = NULL;
 
     if (pqueue_isEmpty(pqueue)) {
@@ -52,13 +52,13 @@ void pqueue_push(PriorityQueue *pqueue, int value, int prioritas)
         return;
     }
 
-    if (prioritas < pqueue->_top->priority) {
+    if (jam1 < pqueue->_top->jamIN) {
         newNode->next = pqueue->_top;
         pqueue->_top = newNode;
     }
     else {
         while ( temp->next != NULL && 
-                temp->next->priority < prioritas)
+                temp->next->jamIN < jam1)
             temp = temp->next;
         newNode->next = temp->next;
         temp->next = newNode;
@@ -76,11 +76,17 @@ void pqueue_pop(PriorityQueue *pqueue)
 
 int pqueue_top(PriorityQueue *pqueue) {
     if (!pqueue_isEmpty(pqueue))
-        return pqueue->_top->data;
+        return pqueue->_top->jamIN;
     else return 0;
 }
 
-int main()
+int pqueue_anotherTop(PriorityQueue *pqueue){
+    if (!pqueue_isEmpty(pqueue))
+        return pqueue->_top->jamOUT;
+    else return 0;
+}
+
+int main(int argc, char const *argv[])
 {
     // Buat objek PriorityQueue
     PriorityQueue myPque;
@@ -89,55 +95,36 @@ int main()
     pqueue_init(&myPque);
 
     int data;
-
-    int x = 1 ->  untuk menyimpan si x;
-
-    int = bilangan bulat; 2^-32 - 2^32-1 -> 4 byte
-    char = masukkin abjad a,b,x,d,qe -> 1 byte
-    long long = bilangan bulat besar; 2^-64 - 2^64-1 -> 8 byte
-    unsigned long long = bilangan bulat besar tanpa min 0 - 2^64 -> 8 byte
-    float = bilangan rasional ->
-    double = bilangan rasional besar
-    short = bilangan bulat kecil
-    string = kata;
-
     scanf("%d", &data);
-    int benda;
-    int harga;
+
+    int jamPokemon, kapasitas;
+    int jamMasuk, jamKeluar;
+    
     for(int i = 0; i < data; ++i){
-        scanf("%d %d", &benda, &harga);
-        pqueue_push(&myPque, benda, harga);
+        scanf("%d %d", &jamPokemon, &kapasitas);
+        int data2;
+        scanf("%d", &data2);
+
+        for(int i = 0; i < data2; ++i){
+            scanf("%d %d", &jamMasuk, &jamKeluar);
+            pqueue_push(&myPque, jamMasuk, jamKeluar);
+        }
+
+        //masuk = "Pika Pika!"
+        //ga ada slot = "Pika Zzz"
+        int count = 1;
+       
     }
 
-    //  while (!pqueue_isEmpty(&myPque)) {
-    //     printf("%d ", pqueue_top(&myPque));
-    //     pqueue_pop(&myPque);
-    // }
+    
 
-    int search;
-    int count = 0;
-    scanf("%d", &search);
-    for(int i = 0; i < data; ++i){
-        int temp = pqueue_top(&myPque);
-        if(temp == search){
-            break;
-        }
-
-        else{
-            count++;
-        }
-
+    printf("\n\n");
+     while (!pqueue_isEmpty(&myPque)) {
+        printf("%d %d\n", pqueue_top(&myPque), pqueue_anotherTop(&myPque));
         pqueue_pop(&myPque);
     }
 
-    if(count > data - 1){
-        printf("Barangnya gak ada beb");
-    }
-
-    else{
-        printf("%d", count);
-    }
-    
+ 
 
 
 

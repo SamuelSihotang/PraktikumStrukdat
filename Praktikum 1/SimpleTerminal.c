@@ -69,6 +69,7 @@ void slist_pushBack(SinglyList *list, char str[])
     SListNode *newNode = (SListNode*) malloc(sizeof(SListNode));
     if (newNode) {
         list->_size++;
+        // newNode->str = value;
         strcpy(newNode->str, str);
         newNode->next = NULL;
         
@@ -125,6 +126,7 @@ void slist_insertAt(SinglyList *list, int index, char str[])
             temp = temp->next;
             _i++;
         }
+        // newNode->data = value;
         strcpy(newNode->str, str);
         newNode->next = temp->next;
         temp->next = newNode;
@@ -270,6 +272,7 @@ int main(int argc, char const *argv[])
             int index, tujuan;
             char *word; // bisa menampung panjang berapapun
             scanf("%d %d", &index, &tujuan);
+            // char word[100];
             word = slist_getAt(&myList, index);
             slist_insertAt(&myList, tujuan, word);
             ++count;
@@ -278,8 +281,11 @@ int main(int argc, char const *argv[])
         if(strcmp(perintah, "rm") == 0){
             int index;
             scanf("%d", &index);
-            slist_removeAt(&myList, index);
-            --count;
+            if(index < count - 1){
+                slist_removeAt(&myList, index);
+                --count;
+            }
+            
         }
 
         if(strcmp(perintah, "mv") == 0){
@@ -290,18 +296,27 @@ int main(int argc, char const *argv[])
             char *word1; // bisa menampung panjang berapapun
             scanf("%d %d", &index, &tujuan);
             word1 = slist_getAt(&myList, index);
-            
-            slist_insertAt(&myList, tujuan, word1);
+            //remove
 
-            if(index > tujuan){
-                move(&myList, index + 1);
+            if(index < tujuan){
+                slist_insertAt(&myList, tujuan + 1, word1);
+                slist_removeAt(&myList, index);
             }
 
-            else if(index < tujuan){
-                move(&myList, index);
+            else if(index > tujuan){
+                slist_insertAt(&myList, tujuan, word1);
+                slist_removeAt(&myList, index + 1);
             }
 
+            else if(index == tujuan){
+                count = count + 0;
+            }
             // ++count;
+            
+            //kalo index = tujuan, jangan ngapain2
+            else{
+                count += 0;
+            }
         }
 
         //stop = break
@@ -309,12 +324,21 @@ int main(int argc, char const *argv[])
             break;
         }
     }
-
-    printf("%d\n", count);
-    while(!slist_isEmpty(&myList)){
-        printf("%s\n", slist_front(&myList));
-        slist_popFront(&myList);
+    
+    if(count == 0){
+        printf("0");
     }
+    
+    else{
+        printf("%d\n", count);
+        if(!slist_isEmpty(&myList)){
+            while(!slist_isEmpty(&myList)){
+            printf("%s\n", slist_front(&myList));
+            slist_popFront(&myList);
+        }
+        }   
+   }
+    
     
     puts("");
     return 0;

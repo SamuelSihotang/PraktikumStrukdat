@@ -1,160 +1,155 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <stdio.h>
 
-/* Struktur Node */
+typedef struct node{
+    int jamMasuk;
+    int jamKeluar;
+    struct node *next;
+}SListNode;
 
-typedef struct pqueueNode_t {
-    int jamIN;
-    int jamOUT;
-    struct pqueueNode_t *next;
-} PQueueNode;
-
-/* Struktur ADT PriorityQueue menggunakan Linked List */
-
-// Prioritas default: nilai minimum
-typedef struct pqueue_t {
-    PQueueNode *_top;
+typedef struct list{
     unsigned _size;
-} PriorityQueue;
+    SListNode *head;
+}Singlylist;
 
-/* Function prototype */
-
-void pqueue_init(PriorityQueue *pqueue);
-bool pqueue_isEmpty(PriorityQueue *pqueue);
-void pqueue_push(PriorityQueue *pqueue, int jam1, int jam2);
-void pqueue_pop(PriorityQueue *pqueue);
-int  pqueue_top(PriorityQueue *pqueue);
-
-/* Function definition below */
-
-void pqueue_init(PriorityQueue *pqueue)
-{
-    pqueue->_top = NULL;
-    pqueue->_size = 0;
+void slist_initialize(Singlylist *list){
+    list->head = NULL;
+    list->_size = 0;
 }
 
-bool pqueue_isEmpty(PriorityQueue *pqueue) {
-    return (pqueue->_top == NULL);
+bool slist_isEmpty(Singlylist *list){
+    return(list->head == NULL);
 }
 
-void pqueue_push(PriorityQueue *pqueue, int jam1, int jam2)
-{
-    PQueueNode *temp = pqueue->_top;
-    PQueueNode *newNode = \
-        (PQueueNode*) malloc (sizeof(PQueueNode));
-    newNode->jamIN = jam1;
-    newNode->jamOUT = jam2;
-    newNode->next = NULL;
+//urutkan dari kecil ke besar boi
+void slist_pushBack(Singlylist *list, int masuk, int keluar){
+    SListNode *newnode = (SListNode*)malloc(sizeof(SListNode));
+    newnode->jamMasuk = masuk;
+    newnode->jamKeluar = keluar;
+    newnode->next = NULL;
+    list->_size++;
 
-    if (pqueue_isEmpty(pqueue)) {
-        pqueue->_top = newNode;
+    if(slist_isEmpty(list)){
+        list->head = newnode;
         return;
     }
-
-    if (jam1 < pqueue->_top->jamIN) {
-        newNode->next = pqueue->_top;
-        pqueue->_top = newNode;
+    
+    //kalo ternyata yg keluar lebih kecil dari list, jadikan dia di depan
+    else if(keluar < list->head->jamKeluar){ //kecil -> besar
+        newnode->next = list->head;
+        list->head = newnode;
     }
-    else {
-        while ( temp->next != NULL && 
-                temp->next->jamIN < jam1)
+    
+    //cari terus sampe ketemu, lalu tinggal rubah dengan mirip swap
+    else{
+        SListNode *temp = list->head;
+        while((temp->next != NULL) && keluar > temp->next->jamKeluar){ 
             temp = temp->next;
-        newNode->next = temp->next;
-        temp->next = newNode;
+        }
+        newnode->next = temp->next; 
+        temp->next = newnode;
     }
 }
 
-void pqueue_pop(PriorityQueue *pqueue)
+void slist_popBack(Singlylist *list)
 {
-    if (!pqueue_isEmpty(pqueue)) {
-        PQueueNode *temp = pqueue->_top;
-        pqueue->_top = pqueue->_top->next;
+    if (!slist_isEmpty(list)) {
+        SListNode *nextNode = list->head->next;
+        SListNode *currNode = list->head;
+
+        if (currNode->next == NULL) {
+            free(currNode);
+            list->head = NULL;
+            return;
+        }
+
+        while (nextNode->next != NULL) {
+            currNode = nextNode;
+            nextNode = nextNode->next;
+        }
+        currNode->next = NULL;
+        free(nextNode);
+        list->_size--;
+    }
+}
+
+void slist_remove(Singlylist *list, int index){
+    list->_size--;
+    SListNode *temp = list->head;
+    SListNode *prev; 
+    if(index == list->head->jamKeluar){ 
+        list->head = list->head->next;
+    }
+    
+    else{
+        while(temp != NULL){
+            prev = temp;
+            temp = temp->next;
+            if(index == temp->jamKeluar){
+              break;
+              }
+        }
+        prev->next = temp->next; 
         free(temp);
+        
     }
 }
 
-int pqueue_top(PriorityQueue *pqueue) {
-    if (!pqueue_isEmpty(pqueue))
-        return pqueue->_top->jamIN;
-    else return 0;
-}
 
-int pqueue_anotherTop(PriorityQueue *pqueue){
-    if (!pqueue_isEmpty(pqueue))
-        return pqueue->_top->jamOUT;
-    else return 0;
-}
-
-int main(int argc, char const *argv[])
-{
-    // Buat objek PriorityQueue
-    PriorityQueue myPque;
-
-    // PENTING! Jangan lupa diinisialisasi
-    pqueue_init(&myPque);
-
-    int data;
-    scanf("%d", &data);
-
-    int jamPokemon, kapasitas;
-    int jamMasuk, jamKeluar;
+int isAllow(Singlylist *list, int isiParkir, int jam){
+    SListNode *temp = list->head;
     
-    for(int i = 0; i < data; ++i){
-        scanf("%d %d", &jamPokemon, &kapasitas);
-        int data2;
-        scanf("%d", &data2);
-
-        for(int i = 0; i < data2; ++i){
-            scanf("%d %d", &jamMasuk, &jamKeluar);
-            pqueue_push(&myPque, jamMasuk, jamKeluar);
+    //kalo lebih besar dari jam, pop out
+    while(temp != NULL){
+        if(temp->jamKeluar <= jam){
+            slist_remove(list, temp->jamKeluar); 
         }
+        temp = temp->next;
+    }
 
-        //masuk = "Pika Pika!"
-        //ga ada slot = "Pika Zzz"
-        int count = 1;
-        while(!pqueue_isEmpty(&myPque)){
-            // 3 20 -> 12, lebih kecil
-            //tambah count
-            if((jamPokemon >= pqueue_top(&myPque)) && (jamPokemon < pqueue_anotherTop(&myPque))){
-                ++count;
-            }
+    //otomatis
+    if(list->_size < isiParkir){
+      return 1; 
+    }else{ 
+      return 0;
+    }
+}
 
-            // 4 6 -> 12, dua2 nya kecil
-            //tmbah count
-            else if((jamPokemon > pqueue_top(&myPque)) && (jamPokemon > pqueue_anotherTop(&myPque))){
-                ++count;
-            }
 
-            // 13 14 -> 12, dua2 nya besar
-            //kurangkan count
-            else if((jamPokemon < pqueue_top(&myPque)) && (jamPokemon <= pqueue_anotherTop(&myPque))){
-                --count;
-            }
-            pqueue_pop(&myPque);
+int main(){
+    int testcase;
+    scanf("%d", &testcase);
+
+    //BUAT OBJEK myList
+    Singlylist mylist[testcase];
+    int isTrue[testcase];
+    int isiParkir, jam, banyakParkir, masuk, keluar;
+    for(int i = 0 ; i < testcase; ++i){
+        //PENTING! Jangan lupa diinisialisasi
+        slist_initialize(&mylist[i]);
+        scanf("%d %d", &jam, &isiParkir); 
+        scanf("%d", &banyakParkir);
+
+        for(int j = 0 ; j < banyakParkir; ++j){
+            scanf("%d %d", &masuk, &keluar);
+            slist_pushBack(&mylist[i], masuk, keluar);
         }
+            isTrue[i] = isAllow(&mylist[i], isiParkir, jam);
 
-        if(count <= kapasitas){
-            printf("Pika Pika\n");
+    }
+
+    for(int i = 0 ; i < testcase ; ++i){
+        if(isTrue[i] == 0){
+          printf("Pika Zzz\n");
+        
         }
-
-        else{
-            printf("Pika Zzz\n");
+        
+        else if(isTrue[i] == 1){
+            printf("Pika Pika!\n");
         }
     }
 
     
-
-    // printf("\n\n");
-    //  while (!pqueue_isEmpty(&myPque)) {
-    //     printf("%d %d\n", pqueue_top(&myPque), pqueue_anotherTop(&myPque));
-    //     pqueue_pop(&myPque);
-    // }
-
- 
-
-
-
-    puts("");
     return 0;
 }
